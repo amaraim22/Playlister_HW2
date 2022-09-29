@@ -69,7 +69,7 @@ export default class SongCard extends React.Component {
         return (
             <div
                 id={'song-' + num}
-                className={itemClass}
+                className={itemClass + 'list-card unselected-list-card'}
                 onDragStart={this.handleDragStart}
                 onDragOver={this.handleDragOver}
                 onDragEnter={this.handleDragEnter}
