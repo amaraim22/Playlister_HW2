@@ -10,6 +10,7 @@ import MoveSong_Transaction from './transactions/MoveSong_Transaction.js';
 
 // THESE REACT COMPONENTS ARE MODALS
 import DeleteListModal from './components/DeleteListModal.js';
+import RemoveSongModal from './components/RemoveSongModal.js';
 
 // THESE REACT COMPONENTS ARE IN OUR UI
 import Banner from './components/Banner.js';
@@ -44,15 +45,6 @@ class App extends React.Component {
             // GET THE LISTS
             return keyPair1.name.localeCompare(keyPair2.name);
         });
-    }
-    // THIS FUNCTION BEGINS THE PROCESS OF ADDING A NEW SONG
-    addSong = () => {
-        if (this.state.currentList) {
-            let newSong = {title:"Untitled", artist:"Unknown", youTubeId:"dQw4w9WgXcQ"};
-            this.state.currentList.songs.push(newSong);
-
-            this.setStateWithUpdatedList(this.state.currentList);
-        }
     }
     // THIS FUNCTION BEGINS THE PROCESS OF CREATING A NEW LIST
     createNewList = () => {
@@ -215,6 +207,40 @@ class App extends React.Component {
     getPlaylistSize = () => {
         return this.state.currentList.songs.length;
     }
+    // THIS FUNCTION BEGINS THE PROCESS OF ADDING A NEW SONG
+    addSong = () => {
+        if (this.state.currentList) {
+            let newSong = {title:"Untitled", artist:"Unknown", youTubeId:"dQw4w9WgXcQ"};
+            this.state.currentList.songs.push(newSong);
+
+            this.setStateWithUpdatedList(this.state.currentList);
+        }
+    }
+    markSongForRemoval = (sourceId) => {
+        let oldSong = this.state.currentList.songs[sourceId - 1];
+
+        this.setState(prevState => ({
+            currentList: prevState.currentList,
+            songIdMarkedForRemoval : sourceId,
+            songMarkedForRemoval : oldSong,
+            sessionData: prevState.sessionData
+        }), () => {
+            // PROMPT THE USER
+            this.showRemoveSongModal();
+        });
+    }
+    removeMarkedSong = () => {
+        this.removeSong(this.state.songIdMarkedForRemoval);
+        this.hideRemoveSongModal();
+    }
+    // THIS FUNCTION BEGINS THE PROCESS OF ADDING A NEW SONG
+    removeSong = (sourceId) => {
+        if (this.state.currentList) {
+            this.state.currentList.songs.splice(sourceId - 1, 1);
+
+            this.setStateWithUpdatedList(this.state.currentList);
+        }
+    }
     // THIS FUNCTION MOVES A SONG IN THE CURRENT LIST FROM
     // start TO end AND ADJUSTS ALL OTHER ITEMS ACCORDINGLY
     moveSong(start, end) {
@@ -278,9 +304,17 @@ class App extends React.Component {
         let modal = document.getElementById("delete-list-modal");
         modal.classList.add("is-visible");
     }
+    showRemoveSongModal() {
+        let modal = document.getElementById("remove-song-modal");
+        modal.classList.add("is-visible");
+    }
     // THIS FUNCTION IS FOR HIDING THE MODAL
     hideDeleteListModal() {
         let modal = document.getElementById("delete-list-modal");
+        modal.classList.remove("is-visible");
+    }
+    hideRemoveSongModal() {
+        let modal = document.getElementById("remove-song-modal");
         modal.classList.remove("is-visible");
     }
     render() {
@@ -313,6 +347,7 @@ class App extends React.Component {
                 />
                 <PlaylistCards
                     currentList={this.state.currentList}
+                    removeSongCallback={this.markSongForRemoval}
                     moveSongCallback={this.addMoveSongTransaction} />
                 <Statusbar 
                     currentList={this.state.currentList} />
@@ -320,6 +355,11 @@ class App extends React.Component {
                     listKeyPair={this.state.listKeyPairMarkedForDeletion}
                     hideDeleteListModalCallback={this.hideDeleteListModal}
                     deleteListCallback={this.deleteMarkedList}
+                />
+                <RemoveSongModal
+                    songToRemove={this.state.songMarkedForRemoval}
+                    hideRemoveSongModalCallback={this.hideRemoveSongModal}
+                    removeSongCallback={this.removeMarkedSong}
                 />
             </div>
         );
