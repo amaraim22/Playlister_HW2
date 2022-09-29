@@ -13,11 +13,11 @@ export default class DeleteListModal extends Component {
                 id="delete-list-modal" 
                 data-animation="slideInOutLeft">
                     <div class="modal-root" id='verify-delete-list-root'>
-                        <div class="modal-north">
+                        <div class="modal-north modal-prompt">
                             Delete playlist?
                         </div>
                         <div class="modal-center">
-                            <div class="modal-center-content">
+                            <div class="modal-center-content modal-textfield">
                                 Are you sure you wish to permanently delete the {name} playlist?
                             </div>
                         </div>
