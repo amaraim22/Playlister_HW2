@@ -45,6 +45,15 @@ class App extends React.Component {
             return keyPair1.name.localeCompare(keyPair2.name);
         });
     }
+    // THIS FUNCTION BEGINS THE PROCESS OF ADDING A NEW SONG
+    addSong = () => {
+        if (this.state.currentList) {
+            let newSong = {title:"Untitled", artist:"Unknown", youTubeId:"dQw4w9WgXcQ"};
+            this.state.currentList.songs.push(newSong);
+
+            this.setStateWithUpdatedList(this.state.currentList);
+        }
+    }
     // THIS FUNCTION BEGINS THE PROCESS OF CREATING A NEW LIST
     createNewList = () => {
         // FIRST FIGURE OUT WHAT THE NEW LIST'S KEY AND NAME WILL BE
@@ -297,6 +306,7 @@ class App extends React.Component {
                     canUndo={canUndo}
                     canRedo={canRedo}
                     canClose={canClose} 
+                    addSongCallback={this.addSong}
                     undoCallback={this.undo}
                     redoCallback={this.redo}
                     closeCallback={this.closeCurrentList}
