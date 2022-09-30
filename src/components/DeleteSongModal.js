@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 
-export default class RemoveSongModal extends Component {
+export default class DeleteSongModal extends Component {
     render() {
-        const { songToRemove, removeSongCallback, hideRemoveSongModalCallback } = this.props;
+        const { songToRemove, deleteSongCallback, hideDeleteSongModalCallback } = this.props;
         let songName = "";
         if (songToRemove) {
             songName = songToRemove.title;
@@ -10,9 +10,9 @@ export default class RemoveSongModal extends Component {
         return (
             <div 
                 className="modal" 
-                id="remove-song-modal" 
+                id="delete-song-modal" 
                 data-animation="slideInOutLeft">
-                <div className="modal-root" id='verify-remove-song-root'>
+                <div className="modal-root" id='verify-delete-song-root'>
                     <div className="modal-north modal-prompt">
                         Remove Song?
                     </div>                
@@ -23,14 +23,14 @@ export default class RemoveSongModal extends Component {
                     </div>
                     <div className="modal-south">
                         <input type="button" 
-                            id="remove-song-confirm-button" 
+                            id="delete-song-confirm-button" 
                             className="modal-button" 
-                            onClick={removeSongCallback}
+                            onClick={deleteSongCallback}
                             value='Confirm' />
                         <input type="button" 
-                            id="remove-song-cancel-button" 
+                            id="delete-song-cancel-button" 
                             className="modal-button" 
-                            onClick={hideRemoveSongModalCallback}
+                            onClick={hideDeleteSongModalCallback}
                             value='Cancel' />
                     </div>
                 </div>
