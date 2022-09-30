@@ -7,6 +7,9 @@ import jsTPS from './common/jsTPS.js';
 
 // OUR TRANSACTIONS
 import MoveSong_Transaction from './transactions/MoveSong_Transaction.js';
+import AddSong_Transaction from './transactions/AddSong_Transaction.js';
+import RemoveSong_Transaction from './transactions/RemoveSong_Transaction.js';
+import EditSong_Transaction from './transactions/EditSong_Transaction.js';
 
 // THESE REACT COMPONENTS ARE MODALS
 import DeleteListModal from './components/DeleteListModal.js';
@@ -209,50 +212,66 @@ class App extends React.Component {
         return this.state.currentList.songs.length;
     }
     // THIS FUNCTION BEGINS THE PROCESS OF ADDING A NEW SONG
-    addSong = () => {
+    addSong = (id, newSong) => {
         if (this.state.currentList) {
-            let newSong = {title:"Untitled", artist:"Unknown", youTubeId:"dQw4w9WgXcQ"};
-            this.state.currentList.songs.push(newSong);
+            this.state.currentList.songs.splice(id, 0, newSong);
 
             this.setStateWithUpdatedList(this.state.currentList);
         }
+        return (id)
+    }
+    newAddSongTransaction = () => {
+        let newSongId = 0;
+        let newSong = {title:"Untitled", artist:"Unknown", youTubeId:"dQw4w9WgXcQ"};
+        if (this.state.currentList) {
+            newSongId = this.state.currentList.songs.length + 1;
+        }
+
+        let transaction = new AddSong_Transaction(this, newSong, newSongId);
+        this.tps.addTransaction(transaction);
     }
     markSongToEdit = (editSongId) => {
         let toEditSong = this.state.currentList.songs[editSongId - 1];
 
         this.setState(prevState => ({
             currentList: prevState.currentList,
-            songIdMarkedToEdit : editSongId,
+            songIdMarkedToEdit : editSongId - 1,
             songMarkedToEdit : toEditSong,
             sessionData: prevState.sessionData
         }), () => {
             // PROMPT THE USER
-            this.showEditSongModal();   
-            console.log(this.state.songMarkedToEdit);       
+            this.showEditSongModal();         
         });
+    }
+    newEditSongTransaction = (editSongId, newSong) => {
+        let transaction = new EditSong_Transaction(this, editSongId, newSong);
+        this.tps.addTransaction(transaction);
     }
     editMarkedSong = (title, artist, youTubeId) => {
         let newSong = {title: title, artist: artist, youTubeId: youTubeId};
 
-        this.editSong(newSong);
+        this.newEditSongTransaction(this.state.songIdMarkedToEdit, newSong);
         this.hideEditSongModal();
     }
-    editSong = (newSong) => {
-        let editId = this.state.songIdMarkedToEdit;
+    editSong = (editId, newSong) => {
+        let oldSong = null;
 
         if (this.state.currentList) {
-            this.state.currentList.songs.splice(editId - 1, 1);
-            this.state.currentList.songs.splice(editId - 1, 0, newSong);
+            oldSong = this.state.currentList.songs[editId];
+            this.state.currentList.songs.splice(editId, 1);
+            this.state.currentList.songs.splice(editId, 0, newSong);
             this.setStateWithUpdatedList(this.state.currentList);
         }
+
+        return (oldSong);
     }
     markSongToDelete = (sourceId) => {
         let oldSong = this.state.currentList.songs[sourceId - 1];
 
         this.setState(prevState => ({
             currentList: prevState.currentList,
-            songIdMarkedToDelete : sourceId,
-            songMarkedToDelete : oldSong,
+            songIdMarkedToDelete: sourceId - 1,
+            songMarkedToDelete: oldSong,
             sessionData: prevState.sessionData
         }), () => {
             // PROMPT THE USER
@@ -261,16 +280,23 @@ class App extends React.Component {
 
     }
     removeMarkedSong = () => {
-        this.deleteSong(this.state.songIdMarkedToDelete);
+        this.newRemoveSongTransaction(this.state.songIdMarkedToDelete);
         this.hideDeleteSongModal();
+    }
+    newRemoveSongTransaction = (oldSongId) => {
+        let transaction = new RemoveSong_Transaction(this, oldSongId);
+        this.tps.addTransaction(transaction);
     }
     // THIS FUNCTION BEGINS THE PROCESS OF ADDING A NEW SONG
     deleteSong = (sourceId) => {
+        let oldSong = null;
         if (this.state.currentList) {
-            this.state.currentList.songs.splice(sourceId - 1, 1);
-
+            oldSong = this.state.currentList.songs[sourceId];
+            this.state.currentList.songs.splice(sourceId, 1);
             this.setStateWithUpdatedList(this.state.currentList);
         }
+
+        return (oldSong)
     }
     // THIS FUNCTION MOVES A SONG IN THE CURRENT LIST FROM
     // start TO end AND ADJUSTS ALL OTHER ITEMS ACCORDINGLY
@@ -356,13 +382,26 @@ class App extends React.Component {
         let modal = document.getElementById("edit-song-modal");
         modal.classList.remove("is-visible");
     }
+    handleOnKeyDown = (event) => {
+        // event.preventDefault();
+        if (event.ctrlKey && event.key === 'z') {
+            this.undo();
+        }
+        else if (event.ctrlKey && event.key === 'y') {
+            this.redo();
+        }
+    }
+    mountComponent = () => {
+        document.addEventListener("keydown", this.handleOnKeyDown);
+    }
+
     render() {
         let canAddSong = this.state.currentList !== null;
         let canUndo = this.tps.hasTransactionToUndo();
         let canRedo = this.tps.hasTransactionToRedo();
         let canClose = this.state.currentList !== null;
         return (
-            <div id="root">
+            <div onKeyDown={this.mountComponent()} id="root">
                 <Banner />
                 <SidebarHeading
                     createNewListCallback={this.createNewList}
@@ -379,7 +418,7 @@ class App extends React.Component {
                     canUndo={canUndo}
                     canRedo={canRedo}
                     canClose={canClose} 
-                    addSongCallback={this.addSong}
+                    addSongCallback={this.newAddSongTransaction}
                     undoCallback={this.undo}
                     redoCallback={this.redo}
                     closeCallback={this.closeCurrentList}

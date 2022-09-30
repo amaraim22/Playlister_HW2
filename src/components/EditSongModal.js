@@ -15,13 +15,14 @@ export default class EditSongModal extends Component {
         let song = "";
         if (songToEdit) {
             song = songToEdit;
-
+            
             if (document.getElementById("titleInput").value !== song.title)
                 document.getElementById("titleInput").value = song.title
             if (document.getElementById("artistInput").value !== song.artist)
                 document.getElementById("artistInput").value = song.artist
             if (document.getElementById("youTubeIdInput").value !== song.youTubeId)
                 document.getElementById("youTubeIdInput").value = song.youTubeId
+            
         }
 
         return (
