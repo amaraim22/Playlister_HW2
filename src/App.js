@@ -383,12 +383,17 @@ class App extends React.Component {
         modal.classList.remove("is-visible");
     }
     handleOnKeyDown = (event) => {
-        // event.preventDefault();
         if (event.ctrlKey && event.key === 'z') {
-            this.undo();
+            if(this.tps.hasTransactionToUndo()) {
+                this.undo();
+                this.forceUpdate();
+            }
         }
         else if (event.ctrlKey && event.key === 'y') {
-            this.redo();
+            if(this.tps.hasTransactionToRedo()) {
+                this.redo();
+                this.forceUpdate();
+            }
         }
     }
     mountComponent = () => {
@@ -400,10 +405,13 @@ class App extends React.Component {
         let canUndo = this.tps.hasTransactionToUndo();
         let canRedo = this.tps.hasTransactionToRedo();
         let canClose = this.state.currentList !== null;
+        let canAddList = this.state.currentList === null;
+
         return (
             <div onKeyDown={this.mountComponent()} id="root">
                 <Banner />
                 <SidebarHeading
+                    canAddList={canAddList}
                     createNewListCallback={this.createNewList}
                 />
                 <SidebarList
@@ -414,6 +422,7 @@ class App extends React.Component {
                     renameListCallback={this.renameList}
                 />
                 <EditToolbar
+                    canAddList={canAddList}
                     canAddSong={canAddSong}
                     canUndo={canUndo}
                     canRedo={canRedo}
